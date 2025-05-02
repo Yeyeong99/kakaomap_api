@@ -3,7 +3,7 @@ import config from "./apikey.js";
 // Kakao Maps SDK 스크립트 동적 생성
 const script = document.querySelector(".kakao");
 script.src =
-  "//dapi.kakao.com/v2/maps/sdk.js?appkey=0f79332a23ebec3df976eaeccfc7e64d&libraries=services&autoload=false";
+  "//dapi.kakao.com/v2/maps/sdk.js?appkey={cofing.API_KEY}&libraries=services&autoload=false";
 
 // SDK가 로드된 후에 kakao.maps.load로 지도 초기화
 // Kakao Maps SDK 스크립트 동적 생성
