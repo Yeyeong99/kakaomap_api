@@ -3,8 +3,22 @@ import config from './apikey.js';
 // Kakao Maps SDK 스크립트 동적 생성
 const script = document.querySelector('.kakao');
 script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${config.apikey}&libraries=services&autoload=false`;
-script.onload = function() {
+
     // SDK가 로드된 후에 kakao.maps.load로 지도 초기화
+// Kakao Maps SDK 스크립트 동적 생성
+
+const doDrop = document.querySelector("ul.do.dropdown-menu");
+const siDrop = document.querySelector("ul.si.dropdown-menu");
+const bankDrop = document.querySelector("ul.bank,dropdown-menu");
+const siAnnounce = document.querySelector("li.si.announce");
+const doBtn = document.querySelector("button.do");
+const siBtn = document.querySelector("button.si");
+const bankBtn = document.querySelector("button.bank");
+const formTag = document.querySelector('form')
+
+
+script.onload = function () {
+  // SDK가 로드된 후에 kakao.maps.load로 지도 초기화
   window.kakao.maps.load(function () {
     
     // 마커를 클릭하면 장소명을 표출할 인포윈도우
@@ -15,10 +29,8 @@ script.onload = function() {
         center: new kakao.maps.LatLng(37.4978, 127.02786), // 지도의 중심좌표
         level: 4, // 지도의 확대 레벨
         mapTypeId: kakao.maps.MapTypeId.ROADMAP, // 지도종류
-        };
-
-    // console.log(1);
-
+      };
+      
     // 지도를 생성한다
     const map = new kakao.maps.Map(mapContainer, mapOption);
 
@@ -29,54 +41,62 @@ script.onload = function() {
         // 데이터 저장
         const mapData = data.mapInfo;
         const bankData = data.bankInfo;
-        let names = [];
-        let banks = [];
+
         // 광역시 / 도
         for (const i in mapData) {
-          names.push(mapData[i].name);
+          const li = document.createElement("li");
+          doDrop.appendChild(li);
+          li.textContent = mapData[i].name;
+          li.role = "button";
+          li.classList.add("p-2");
+          const hr = document.createElement("hr");
+          hr.classList.add("m-0");
+          doDrop.appendChild(hr);
+          li.addEventListener("click", (e) => {
+            doBtn.textContent = li.textContent;
+            siAnnounce.classList.add("d-none");
+            let countries = [];
+            for (const i in mapData) {
+              if (mapData[i].name === doBtn.textContent) {
+                countries = countries.concat(mapData[i].countries);
+              }
+            }
+            for (const country of countries) {
+              const li = document.createElement("li");
+              siDrop.appendChild(li);
+              li.role = "button";
+              li.classList.add("p-2");
+              li.textContent = country;
+              const hr = document.createElement("hr");
+              hr.classList.add("m-0");
+              siDrop.appendChild(hr);
+
+              li.addEventListener("click", (e) => {
+                siBtn.textContent = li.textContent;
+              });
+            }
+          });
         }
+
         // 은행
         for (const bank of bankData) {
-          banks.push(bank);
-        }
-        // 광역시, 은행 확인
-        console.log(names, banks);
+          const li = document.createElement("li");
+          bankDrop.appendChild(li);
+          li.role = "button";
+          li.classList.add("p-2");
+          li.textContent = bank;
+          const hr = document.createElement("hr");
+          hr.classList.add("m-0");
+          bankDrop.appendChild(hr);
 
-        // 테스트 용: 마커를 표시할 위치와 title 객체 배열
-        var positions = [
-          {
-            title: "카카오",
-            latlng: new kakao.maps.LatLng(37.4978, 127.02786),
-          },
-          {
-            title: "생태연못",
-            latlng: new kakao.maps.LatLng(33.450936, 126.569477),
-          },
-          {
-            title: "텃밭",
-            latlng: new kakao.maps.LatLng(33.450879, 126.56994),
-          },
-          {
-            title: "근린공원",
-            latlng: new kakao.maps.LatLng(33.451393, 126.570738),
-          },
-        ];
-        for (var i = 0; i < positions.length; i++) {
-          // 마커를 생성합니다
-          var marker = new kakao.maps.Marker({
-            map: map, // 마커를 표시할 지도
-            position: positions[i].latlng, // 마커를 표시할 위치
-            title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+          li.addEventListener("click", (e) => {
+            bankBtn.textContent = li.textContent;
           });
-
-          marker.setMap(map);
         }
     });
 
     // 장소 검색 객체 생성하기
     var ps = new kakao.maps.services.Places();
-
-    ps.keywordSearch('', placeSearchCB);
 
     // 키워드 검색 완료 시 호출되는 콜백 함수
     function placeSearchCB (data, status, pagination) {
@@ -85,9 +105,11 @@ script.onload = function() {
             // LatLng Bounds 객체에 좌표 추가
             var bounds = new kakao.maps.LatLngBounds();
 
+            console.log(data)
+
             for (var i=0; i<data.length; i++) {
                 displayMarker(data[i]);
-                bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
+                bounds.extend(new kakao.maps.LatLng(data[i].x, data[i].y));
             }
 
             // 검색된 장소 위치 기준으로 지도 범위 재설정
@@ -108,9 +130,14 @@ script.onload = function() {
             // 마커 클릭하면 장소명이 인포윈도우에 표출된다.
             infowindow.setContent('<div style="padding:5px; font-size:12px;">' + place.place_name + "</div>");
             infowindow.open(map, marker);
-        })
-        
+        })   
     }
+
+    formTag.addEventListener('submit', (e) => {
+        e.preventDefault()
+        console.log(`${doBtn.textContent} ${siBtn.textContent} ${bankBtn.textContent}`)
+        ps.keywordSearch(doBtn.textContent + siBtn.textContent + bankBtn.textContent, placeSearchCB);
+    })
 
     // 지도 타입 변경 컨트롤을 생성한다
     var mapTypeControl = new kakao.maps.MapTypeControl();
